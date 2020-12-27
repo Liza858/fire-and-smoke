@@ -164,12 +164,19 @@ int main(int, char **)
    static float smoke_life = 10;
    static float fire_size = 0.25;
    static float smoke_size = 2.0;
+   static int fps = 0;
+   static int ms = 0;
+  
+   std::chrono::time_point<std::chrono::high_resolution_clock> prev_time = std::chrono::high_resolution_clock::now();
+   std::chrono::time_point<std::chrono::high_resolution_clock> prev_update_time = std::chrono::high_resolution_clock::now();
+   std::chrono::time_point<std::chrono::high_resolution_clock> current_time;
 
    glDepthFunc(GL_LEQUAL);
    glEnable(GL_DEPTH_TEST);
 
    while (!glfwWindowShouldClose(window))
    {
+
       glfwPollEvents();
 
       // Get windows size
@@ -188,6 +195,19 @@ int main(int, char **)
       ImGui_ImplGlfw_NewFrame();
       ImGui::NewFrame();
 
+      current_time = std::chrono::high_resolution_clock::now();
+   
+      int d_time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - prev_time).count();
+      int d_update_time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - prev_update_time).count();
+      if (d_update_time >= 1000) {
+         ms = d_time;
+         fps = 1000 / d_time;
+         prev_update_time = current_time;
+      }
+
+      prev_time = current_time;
+      
+
       // GUI
       ImGui::Begin("Settings");
       ImGui::SliderInt("zoom sensitivity, %", &zoom_sensitivity, 0, 100);
@@ -195,6 +215,8 @@ int main(int, char **)
       ImGui::InputFloat("smoke particles life coef", &smoke_life);
       ImGui::InputFloat("fire particles size", &fire_size);
       ImGui::InputFloat("smoke particles size", &smoke_size);
+      ImGui::InputInt("FPS", &fps);
+      ImGui::InputInt("ms in frame", &ms);
       ImGui::End();
 
         
